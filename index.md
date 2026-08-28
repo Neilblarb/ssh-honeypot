@@ -2,8 +2,6 @@ This report documents a 10 day SSH honeypot deployed on an AWS EC2 cloud service
 ## SETUP
 Ubuntu 26.04 LTS was used for the OS of the AWS EC2 instance with an initial security group of a host IP access only on port 22. Cowrie was configured to listen to SSH traffic on port 2223 under a non-privileged user account since Linux restricts ports below 1024 to root processes and running an internet-facing service, especially a honeypot, as root, is a poor security practice. But since an attacker usually attacks SSH on its default port of 22, an iptables NAT rule was added to redirect all incoming traffic on port 22 to port 2223.
 
-*********Insert image diagram of the thingy
-
 prior to redirecting port 22, an access was needed to use the SSH without being redirected to Cowrie, in this case, first through editing the sshd_config of the server (/etc/ssh/sshd_config) to allow SSH on port 2222 instead.Then, through AWS EC2 security group, an inbound rule was added allowing SSH access on port 2222 restricted to my IP address only
 
 *******insert image of security group here later scrub the ip address.
@@ -11,12 +9,10 @@ prior to redirecting port 22, an access was needed to use the SSH without being 
 After securing access, Cowrie was installed by cloning from its official GitHub repository (https://github.com/cowrie/cowrie) under a dedicated non-privileged user named Cowrie, in ~/cowrie folder. Python dependencies were installed in a virtual environment as it is best practice to isolate it from system Python installation
 
 Cowrie's default config file was copied from src/cowrie/data/etc/cowrie.cfg.dist to etc/cowrie.cfg inside the Cowrie directory and two changes were made, first the default hostname was changed since many automated SSH attacks blacklists known honeypot hostnames, including Cowrie's default usernames.
-
--- insert hostname image
+![Hostname Change](images/hostname.png)
 
 Secondly, the SSH listen_endpoints was set to port 2223 on all interfaces (0.0.0.0)
-
---insert listenendpoint image
+![Endpoint Change](images/listenendpoints.png)
 
 A systemd service was then created to automatically start Cowrie on system boot, ensuring the honeypot remain active after a reboot, in case the AWS EC2 instance reboots.
 
@@ -35,17 +31,18 @@ Data was collected over a period of 10 days from August 3 to August 12, 2026. Co
 
 Using Splunk, It was shown that over ten days there were 13954 events recorded, with a single-day peak of 5,232 events on August 4. The day with the least events was August 9 with only 195 events recorded. Based on the graph below, the event frequencies are unevenly distributed and attack volume varied significantly day to day.
 
----photo of the graph of 10 days
+![Graph of events by days](images/totalevents.png)
 
 Overall there were 2762 session connects.
 
 However, the unique IP logged tells that August 4th had a low unique IP rate, with the highest in August 13 with 101 unique IPs logged, whereas August 4 only had 27 unique IPs logged. this suggests that the event spike in August 4 was driven by aggresive, high frequency IPs than a big wave of attackers. Overall, throughout ten days there were 551 unique IPs.
 
---- photo of the unique ip logs
+![Graph of Unique Ips](images/uniqueips.png)
+
 ## ON Geography
 The geographical location of each attacker's IP is not distributed equally, but it is skewed, as shown on the graph below
 
--- photo of geography
+![Geography chart](images/geotouse.png)
 
 The attacks come mostly from United States and Argentina, making up almost half the total unique IP logged, while china and chile trail behind with a significantly smaller attacks, followed by other countries with attacks below 20 unique IP. The high volume of attacks from the United States could be because of the high amount of Cloud Infrastructure hosted there. Chile and Argentina high count of unique IP suggests that Latin America is being used as proxies for attackers, it could be because of the amount of vulnerable servers and devices present in Latin America, since there is limited cloud infrastructure presence in said country.
 
@@ -53,7 +50,7 @@ Geographic location of these IPs does not necessarily indicate the attacker's lo
 ## On Sessions
 Beyond geographic distribution, The data records of the most commonly usernames are as the graph below
 
----photo of the graph (top 15)
+![Top Usernames](images/usernametop.png)
 
 unsurprisingly the most commonly inputted username is root, hoping for access to a root user, with admin and ubuntu being second and third.
 The usernames root, admin, ubuntu, user, test, user1, are most likely targeting vulnerable servers with generic accounts that should not exist or have weak passwords on that is poorly configured on a managed server.
@@ -71,7 +68,7 @@ The variety of usernames attempted suggests that the attacks used wordlists of c
 ## Passwords
 The password attempted for session connects are seen in the graph below
 
---graoh of the thingy
+![top passwords](images/toppass.png)
 
 most of these passwords are commonly used passwords such as 123456, 123, 1234, as well as keyboard pattern such as 1QAZ@WSX and qwe123!@. but there are also common default passwords of servers such as admin or ubuntu or admin123.
 
@@ -81,7 +78,7 @@ Most likely the attackers use a comprehensive wordlist for these passwords, eith
 ## Banners
 Analysis of SSH client version banners shows that SSH-2.0-Go makes up the overwhelming majority of attacker clients
 
---graph of the thingy.
+![Top Banners](images/banners.png)
 
 This is consistent with many SSH scanning tools and botnets being built using Go's golang.org/x/crypto/ssh library, whose default client banner is SSH-2.0-Go. The majority of attackers did not customize their client names at all. The same goes for SSH-2.0-OpenSSH_7.9 and SSH-2.0-libssh2_1.11.1, which is the default banners for OpenSSH version 7.9, and libssh2), while SSH-2.0-RawPasswordConnectOnly_1.0 is a custom client banner, which could suggest that it is a purpose-built which functionality is only to authentiate passwords.  Another client version is 'SSH-2.0-ZGrab ZGrab SSH Survey', utilizing Zgrab utility tool which is a network scanner for Internet Wide surveys. The client version MGLNDD_3.80.224.36_22 is a client name that has the victim's IP and port embedded in its version (MGLNDD_IP_Port). MGLNDD is a payload associated with the Magellan Project using RIPE Atlas, made by RIPE Network Coordination Centre (RIPE NCC), a non-profit Regional Internet Registry.According to this research https://www.mdpi.com/1424-8220/26/1/11 It is a legitimate internet measurement initiative to measure internet connectivity and reachability and not a malicious one. There were 8 connections with the client of GET / HTTP/1.1 and 5 with GET /favicon.ico HTTP/1.1 . This could be caused by indiscriminate port scanners sending HTTP payloads at every open port regardless of the service. 15 connections were sent with an empty client banner suggesting the attacker intentionally scrubbed data to avoid fingerprinting.
 
