@@ -5,7 +5,11 @@ Ubuntu 26.04 LTS was used for the OS of the AWS EC2 instance with an initial sec
 
 prior to redirecting port 22, an access was needed to use the SSH without being redirected to Cowrie, in this case, first through editing the sshd_config of the server (/etc/ssh/sshd_config) to allow SSH on port 2222 instead.Then, through AWS EC2 security group, an inbound rule was added allowing SSH access on port 2222 restricted to my IP address only
 
-*******insert image of security group here later scrub the ip address.
+![Security group](images/security.png)
+
+So, below is the diagram on how the ec2 instance works:
+
+![Network diagram](images/diagram.png)
 
 After securing access, Cowrie was installed by cloning from its official GitHub repository (https://github.com/cowrie/cowrie) under a dedicated non-privileged user named Cowrie, in ~/cowrie folder. Python dependencies were installed in a virtual environment as it is best practice to isolate it from system Python installation
 
