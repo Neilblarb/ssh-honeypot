@@ -137,7 +137,7 @@ To verify that this malware is a miner can be achieved by searching common tools
 This shows that it is indeed a cryptocurrency miner, using XMRig, a popular open-source mining application.
 
 #### Conclusion
-IN summary, this IP belongs to a Chinese Museum server that was compromised and used as a proxy to distribute XMRig-based cryptocurrency mining malware targeting Linux systems.
+In summary, this IP belongs to a Chinese Museum server that was compromised and used as a proxy to distribute XMRig-based cryptocurrency mining malware targeting Linux systems.
 
 
 
@@ -258,9 +258,9 @@ Linux server-01 6.8.0-40-generic #40-Ubuntu SMP PREEMPT_DYNAMIC Mon, Aug 12 11:2
 
 In this example it shows shows Kernel name (Linux), Hostname (server-01), Kernel Release (6.8.0-40-generic) Kernel Version (#40-Ubuntu SMP PREEMP_DYNAMIC), Kernel Build Timestamp (Mon, Aug 12 11:20:15 UTC 2024), Machine Architecture(x86_64), Processor Type (x86_64), Hardware Platform(x86_64), and operating system(GNU/Linux).
 
-Afterwards they did cat /proc/cpuinfo to check CPU info, likely to gather system information, possibly to access hardware viability for cryptocurrency mining, such as model name and core count, and flags such as aes, avx2, avx512 (AES Encryption), to mine cryptocurrency efficiently.
+Afterwards they did cat /proc/cpuinfo to check CPU info, likely to gather system information, possibly to assess hardware viability for cryptocurrency mining, such as model name and core count, and flags such as aes, avx2, avx512 (AES Encryption), to mine cryptocurrency efficiently.
 
-This is proven by their next two commands, ps | grep '\[Mm]iner' and ps -ef | grep '\[Mm]iner'.
+This is proven by their next two commands, `ps | grep '[Mm]iner'` and `ps -ef | grep '[Mm]iner'`.
 
 
 ![miner command](images/71ps.png)
@@ -290,7 +290,7 @@ Next they ran locate D877F783D5D3EF8Cs,
 
 according to securelist.com, D877F783D5D3EF8Cs is a file that contains user ID and encryption key for interaction between desktop client and telegram servers.
 
-The last thing they did before exiting is to do an echo command of echo Hi | cat -n
+The last thing they did before exiting is to do an echo command of `echo Hi | cat -n`
 
 ![Echo command](images/71echo.png)
 
@@ -321,7 +321,7 @@ The attacks can largely be avoided if the user takes some precaution and a funda
 
 First, Do not expose your SSH port to 0.0.0.0/0 if you can avoid it. Restricting SSH access to known IPs will make it impossible for outside IPs to attack your devices entirely. Most services that use SSH do not require for the SSH port to be open to the internet. But, if restricting your SSH port is not possible, there are still some safety precautions you can take.
 
-Disable password authentication for SSH logins. Password authentication can be disabled entirely in sshd_config, and opting for keypairs is significantl more secure. Unlike passwords which can be leaked, guessed, or brute-forced, keypairs are a modern SSH keypair such as Ed25519 uses a 256-bit private key, with more combinations than the atoms in the universe, making brute-forcing and guessing practically impossible. It is still possible however for your key to be leaked if you store it irresponsibly, just like any other password or file. But, if you still need to use password authentication, there are still additional precautions worth taking.
+Disable password authentication for SSH logins. Password authentication can be disabled entirely in sshd_config, and opting for keypairs is significantly more secure. Unlike passwords which can be leaked, guessed, or brute-forced, keypairs are a modern SSH keypair such as Ed25519 uses a 256-bit private key, with more combinations than the atoms in the universe, making brute-forcing and guessing practically impossible. It is still possible however for your key to be leaked if you store it irresponsibly, just like any other password or file. But, if you still need to use password authentication, there are still additional precautions worth taking.
 
 Do not use common credentials for your devices. Most of the attackers look for common credentials by password spraying/brute forcing their way in, using wordlists such as the Rockyou wordlist. Using a long, randomly generated passphrase or string is recommended
 
@@ -337,10 +337,15 @@ Monitor for any new, unrecognized processes and key access. From the data gather
 The data collected over this 10-day honeypot demonstrates that no internet-exposed SSH is safe from attacks. However, an open SSH port with security hygiene is significantly better than an open SSH port with none. Practices such as disabling password authentication and keeping systems updated are sufficient to stop the majority of attacks observed over the 10-day collection period.
 
 ## References
+
 RIPE Atlas Research: https://www.mdpi.com/1424-8220/26/1/11
+
 Securelist: https://securelist.com/cloud-atlas-attacks-with-new-backdoor-vbcloud/115103/
+
 Eleethub palo alto networks:https://unit42.paloaltonetworks.com/los-zetas-from-eleethub-botnet/
+
 Cowrie Official Site: https://www.cowrie.org/
+
 Mikrotik Command Reference: https://help.mikrotik.com/docs/spaces/ROS/pages/97779929/Cloud
 
 
