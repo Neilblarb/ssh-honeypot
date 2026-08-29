@@ -1,4 +1,5 @@
 This report documents a 10 day SSH honeypot deployed on an AWS EC2 cloud service using Cowrie Honeypot https://www.cowrie.org/ to capture and analyze real world attack against an exposed SSH port open to the internet (0.0.0.0/0)
+
 ## SETUP
 Ubuntu 26.04 LTS was used for the OS of the AWS EC2 instance with an initial security group of a host IP access only on port 22. Cowrie was configured to listen to SSH traffic on port 2223 under a non-privileged user account since Linux restricts ports below 1024 to root processes and running an internet-facing service, especially a honeypot, as root, is a poor security practice. But since an attacker usually attacks SSH on its default port of 22, an iptables NAT rule was added to redirect all incoming traffic on port 22 to port 2223.
 
@@ -35,7 +36,7 @@ Using Splunk, It was shown that over ten days there were 13954 events recorded, 
 
 Overall there were 2762 session connects.
 
-However, the unique IP logged tells that August 4th had a low unique IP rate, with the highest in August 13 with 101 unique IPs logged, whereas August 4 only had 27 unique IPs logged. this suggests that the event spike in August 4 was driven by aggresive, high frequency IPs than a big wave of attackers. Overall, throughout ten days there were 551 unique IPs.
+However, the unique IP logged tells that August 4th had a low unique IP rate, with the highest in August 13 with 101 unique IPs logged, whereas August 4 only had 27 unique IPs logged. this suggests that the event spike in August 4 was driven by aggressive, high frequency IPs than a big wave of attackers. Overall, throughout ten days there were 551 unique IPs.
 
 ![Graph of Unique Ips](images/uniqueips.png)
 
@@ -44,9 +45,10 @@ The geographical location of each attacker's IP is not distributed equally, but 
 
 ![Geography chart](images/geotouse.png)
 
-The attacks come mostly from United States and Argentina, making up almost half the total unique IP logged, while china and chile trail behind with a significantly smaller attacks, followed by other countries with attacks below 20 unique IP. The high volume of attacks from the United States could be because of the high amount of Cloud Infrastructure hosted there. Chile and Argentina high count of unique IP suggests that Latin America is being used as proxies for attackers, it could be because of the amount of vulnerable servers and devices present in Latin America, since there is limited cloud infrastructure presence in said country.
+The attacks come mostly from United States and Argentina, making up almost half the total unique IP logged, while china and Chile trail behind with a significantly smaller attacks, followed by other countries with attacks below 20 unique IP. The high volume of attacks from the United States could be because of the high amount of Cloud Infrastructure hosted there. Chile and Argentina high count of unique IP suggests that Latin America is being used as proxies for attackers, it could be because of the amount of vulnerable servers and devices present in Latin America, since there is limited cloud infrastructure presence in said country.
 
 Geographic location of these IPs does not necessarily indicate the attacker's location, since IPs could belong to compromised devices or cloud infrastructure hijacked by attackers elsewhere
+
 ## On Sessions
 Beyond geographic distribution, The data records of the most commonly usernames are as the graph below
 
@@ -80,13 +82,13 @@ Analysis of SSH client version banners shows that SSH-2.0-Go makes up the overwh
 
 ![Top Banners](images/banners.png)
 
-This is consistent with many SSH scanning tools and botnets being built using Go's golang.org/x/crypto/ssh library, whose default client banner is SSH-2.0-Go. The majority of attackers did not customize their client names at all. The same goes for SSH-2.0-OpenSSH_7.9 and SSH-2.0-libssh2_1.11.1, which is the default banners for OpenSSH version 7.9, and libssh2), while SSH-2.0-RawPasswordConnectOnly_1.0 is a custom client banner, which could suggest that it is a purpose-built which functionality is only to authentiate passwords.  Another client version is 'SSH-2.0-ZGrab ZGrab SSH Survey', utilizing Zgrab utility tool which is a network scanner for Internet Wide surveys. The client version MGLNDD_3.80.224.36_22 is a client name that has the victim's IP and port embedded in its version (MGLNDD_IP_Port). MGLNDD is a payload associated with the Magellan Project using RIPE Atlas, made by RIPE Network Coordination Centre (RIPE NCC), a non-profit Regional Internet Registry.According to this research https://www.mdpi.com/1424-8220/26/1/11 It is a legitimate internet measurement initiative to measure internet connectivity and reachability and not a malicious one. There were 8 connections with the client of GET / HTTP/1.1 and 5 with GET /favicon.ico HTTP/1.1 . This could be caused by indiscriminate port scanners sending HTTP payloads at every open port regardless of the service. 15 connections were sent with an empty client banner suggesting the attacker intentionally scrubbed data to avoid fingerprinting.
+This is consistent with many SSH scanning tools and botnets being built using Go's golang.org/x/crypto/ssh library, whose default client banner is SSH-2.0-Go. The majority of attackers did not customize their client names at all. The same goes for SSH-2.0-OpenSSH_7.9 and SSH-2.0-libssh2_1.11.1, which is the default banners for OpenSSH version 7.9, and libssh2), while SSH-2.0-RawPasswordConnectOnly_1.0 is a custom client banner, which could suggest that it is a purpose-built which functionality is only to authenticate passwords.  Another client version is 'SSH-2.0-ZGrab ZGrab SSH Survey', utilizing Zgrab utility tool which is a network scanner for Internet Wide surveys. The client version MGLNDD_3.80.224.36_22 is a client name that has the victim's IP and port embedded in its version (MGLNDD_IP_Port). MGLNDD is a payload associated with the Magellan Project using RIPE Atlas, made by RIPE Network Coordination Centre (RIPE NCC), a non-profit Regional Internet Registry. According to an mdpi research, It is a legitimate internet measurement initiative to measure internet connectivity and reachability and not a malicious one. There were 8 connections with the client of GET / HTTP/1.1 and 5 with GET /favicon.ico HTTP/1.1 . This could be caused by indiscriminate port scanners sending HTTP payloads at every open port regardless of the service. 15 connections were sent with an empty client banner suggesting the attacker intentionally scrubbed data to avoid fingerprinting.
 
 ## In-depth Analyses
 
 Some attacks are interesting enough to have an in-depth analysis of the attacks. 
 
-### 61.240.141.125
+## 61.240.141.125
 This IP attacked on the 6th of August. It had 3 sessions, first two sessions were only Connects and Close as seen below.
 
 ![First Connect](images/61connect1.png)
@@ -109,11 +111,11 @@ A search using Shodan Search Engine of the IP (61.240.141.125) found that it bel
 
 ![Shodan Info](images/61shodan.png)
 
-It is unclear how this server was initially compromised and used as a proxy by the attacker, at the time of writing the only ports visible on shodan are HTTP and HTTPS. 
+It is unclear how this server was initially compromised and used as a proxy by the attacker, at the time of writing the only ports visible on Shodan are HTTP and HTTPS. 
 
 ### File analysis
 
-A virustotal search of the hash shows that the file uploaded was an ELF file (Executable and Linkable File Format), for a cryptocurrency miner.
+A Virustotal search of the hash shows that the file uploaded was an ELF file (Executable and Linkable File Format), for a cryptocurrency miner.
 
 ![Virustotal search](images/61virustotal.png)
 
@@ -135,7 +137,7 @@ IN summary, this IP belongs to a Chinese Museum server that was compromised and 
 
 
 
-### 193.178.59.219
+## 193.178.59.219
 This IP attacked on the 10th of August, it had 4 sessions, but they ran 2 sessions in parallel, as seen below.
 
 ![Parallel Sessions](images/193parallel.png)
@@ -156,7 +158,7 @@ The attacker's SSH client passed environment variables to the session and the da
 
 ![Cowrie client vars](images/193vars.png)
 
-what is interesting is that the language requested is de_CH, German language specifically used in Switzerland. compared to de_DE which is standard german.
+what is interesting is that the language requested is de_CH, German language specifically used in Switzerland. compared to de_DE which is standard German.
 
 Cowrie also ascertained that the architecture of the attacker is a 64bit Linux system
 
@@ -228,22 +230,20 @@ And in line 92-108, the script is configured to intercept any PRIVMSG (Private M
 ### Conclusion
 This attack is a more sophisticated attack compared to the direct file upload miner delivery on the first sessions. Rather than deploying a miner, the Eleethub botnet establishes control by adding an SSH backdoor and recruiting the machine to an IRC Network, which any subsequent payload such as cryptocurrency miners would be delivered via commands executions in IRC with PRIVMSG. 
 
----
-
-### 71.30.205.149
+## 71.30.205.149
 This IP connected on the 8th of August at 5:46 PM, their attack lasted for about 13 seconds. 
 
 Their client banner shows that they were using Libssh2 SSH client, (SSH-2.0-libssh2_1.11.1). The IP tried to login as root/root, but failed, and a second login of root/admin succeeded
 
--- image of the thing
+![Login Credentials](images/71login.png)
 
 The attacker did not upload a file, but they wrote multiple commands that are worth looking at. the first thing they did was /ip cloud print
 
--- image of it
+![ip cloud print command](images/71ipcloud.png)
 
 /ip cloud print is not a command for Linux, but it is a command for RouterOS systems, used by MikroTik hardwares. This command tries to open to the IP menu on RouterOS and prints the cloud configuration submenu, that manages Dynamic DNS. Image below is an example of the data shown using it
 
--- image
+![ip cloud print output](images/71ipcloud2.png)
 
 Then they did ifconfig, a command that only works on Linux/Unix systems, not RouterOS, so likely this attacker is not specifically targeting MikroTik services but spraying. ifconfig shows Ip addresses, Mac addresses, interface names, among other things.
 
@@ -258,13 +258,15 @@ Afterwards they did cat /proc/cpuinfo to check CPU info, likely to gather system
 
 This is proven by their next two commands, ps | grep '\[Mm]iner' and ps -ef | grep '\[Mm]iner'.
 
---images
+
+![miner command](images/71ps.png)
+![miner command](images/71ps2.png)
 
 This command shows the attacker if there are any processes running with the name Miner/miner. this is common in cryptocurrency mining attacks because a system that already has a miner will not perform efficiently, so usually the attacker if they found one, deletes the competitor's mining processes first.
 
 The next command is a malicious data gathering command, seen below
 
---image
+![Malicious command](images/71malicious.png)
 
 this command lists files, including hidden files, and their detailed information. 
 
@@ -280,13 +282,13 @@ They could also hijack any connected SIM cards for a proxy for phishing.
 
 Next they ran locate D877F783D5D3EF8Cs,
 
---locate
+![locate command](images/71locate.png)
 
 according to securelist.com, D877F783D5D3EF8Cs is a file that contains user ID and encryption key for interaction between desktop client and telegram servers.
 
 The last thing they did before exiting is to do an echo command of echo Hi | cat -n
 
--- image echo
+![Echo command](images/71echo.png)
 
 This is peculiar because it does not do anything, only to print:
      1	hi
@@ -296,14 +298,17 @@ This is usually a connectivity test to check if the SSH is executing commands, b
 ### IP analysis
 A shodan search procured no results, but using ipinfo.io shows that the IP originated from Albuquerque, New Mexico. 
 
--- photo
+
+![Ipinfo](images/71ipinfo.png)
 
 A search in abuseipdb.com also shows 223 user reports as of writing, higher than the previous of 13, with most tags being SSH.
+
+![Ipdb](images/71ipdb.png)
 
 ### Conclusion
 Unlike other sessions we analyzed, this attacker's also focused on credential theft and account hijacking with searching for Telegram session data and SMS vulnerabilities to possibly bypass 2FA. The attacker did also behave for cryptocurrency mining operations as well. The attacker also does broad targetting of systems, not just linux but MikroTik RouterOS commands.
 
-# Conclusion
+## Conclusion
 Vulnerable SSH attacks are still commonplace today, attackers are not merely individuals but botnets too, ranging from automated port scanning to malware delivery and credential theft. The attackers use multiple ways to inject malware from SFTP file uploads to shell injections via IRC C2s.
 
 The majority of observed attacks were motivated by computing power for their cryptocurrency mining operation, potentially making the victim's hardware run slower or even racking up bills for the victim in cases of attacks to a cloud server, by increasing compute cost. In cases of credential/account theft, attackers may steal Telegram or other social media/telecommunication session tokens or access SMS services for two-factor authentication bypass.
@@ -327,7 +332,12 @@ Monitor for any new, unrecognized processes and key access. From the data gather
 ## Closing
 The data collected over this 10-day honeypot demonstrates that no internet-exposed SSH is safe from attacks. However, an open SSH port with security hygiene is significantly better than an open SSH port with none. Practices such as disabling password authentication and keeping systems updated are sufficient to stop the majority of attacks observed over the 10-day collection period.
 
-
+## References
+RIPE Atlas Research: https://www.mdpi.com/1424-8220/26/1/11
+Securelist: https://securelist.com/cloud-atlas-attacks-with-new-backdoor-vbcloud/115103/
+Eleethub palo alto networks:https://unit42.paloaltonetworks.com/los-zetas-from-eleethub-botnet/
+Cowrie Official Site: https://www.cowrie.org/
+Mikrotik Command Reference: https://help.mikrotik.com/docs/spaces/ROS/pages/97779929/Cloud
 
 
 
