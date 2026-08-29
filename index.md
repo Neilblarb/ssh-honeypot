@@ -138,32 +138,33 @@ IN summary, this IP belongs to a Chinese Museum server that was compromised and 
 ### 193.178.59.219
 This IP attacked on the 10th of August, it had 4 sessions, but they ran 2 sessions in parallel, as seen below.
 
--- image of the cowrie connect
+![Parallel Sessions](images/193parallel.png)
 
-the first 2 sessions ran within 50 miliseconds of each other, and performed an SSH handshake. The client banner identified it as an OpenSSH client running on a debian 11 'Bullseye' system. (SSH-2.0-OpenSSH_8.4p1 Debian-5+deb11u3).
+the first 2 sessions ran within 50 milliseconds of each other, and performed an SSH handshake. The client banner identified it as an OpenSSH client running on a Debian 11 'Bullseye' system. (SSH-2.0-OpenSSH_8.4p1 Debian-5+deb11u3).
 
 the two session had a different login parameters, the first session (77f534d25e6b), used pi as a login and raspberry as the password
 
---image of login
+![First Login Credentials](images/193login1.png)
 
 and the second session (9f9ffef1c4ef), used pi as a login and raspberryraspberry993311
 
---image of second login
+![Second Login Credentials](images/193login2.png)
 
 Other than the login credentials, the two sessions ran identically.
 
 The attacker's SSH client passed environment variables to the session and the data is shown in cowrie.client.var below
 
---image of the var
+![Cowrie client vars](images/193vars.png)
 
 what is interesting is that the language requested is de_CH, German language specifically used in Switzerland. compared to de_DE which is standard german.
 
 Cowrie also ascertained that the architecture of the attacker is a 64bit Linux system
 
---image of the 64bit
+![Cowrie client params](images/193params.png)
 
 Rather than opening an interactive SSH shell, the attacker used SCP to upload the file directly as seen below.
---image of the upload
+
+![SCP upload](images/193scp.png)
 
 The attacker likely ran a command similar to:
 scp V62vtXQH pi@172.31.29.105:/tmp/
@@ -172,18 +173,23 @@ The First two sessions only lasted for about 2 seconds (13:28:30-13:28:32)
 
 The next parallel sessions had the same login credentials and they did two commands per sessions, seen below
 
--- image of commands
+
+![Commands submitted](images/193command.png)
 
 The attacker gave execution permissions to the file they sent to /tmp using the chmod command, and tried to run it with bash and ./V62vtXQH. Because Cowrie is designed as a fake server, the attacker likely closed the connection soon after it didn't run the commands successfully.
 
 ### IP analysis
 Shodan had no records for this IP,
 
---- image of shodan
 
-But using ipinfo.io, it shows that the location of the IP server is in Hamburg, Germany using Wilhelm Telecommunication service as a provider. And as of writing, there has been 13 abuse reports to the IP on abuseipdb.com, and all reports were SSH-related. uggesting this IP is specifically used for SSH-based attacks rather than broader scanning
+![Shodan search](images/193shodan.png)
 
---- image of ipdb
+But using ipinfo.io, it shows that the location of the IP server is in Hamburg, Germany using Wilhelm Telecommunication service as a provider. And as of writing, there has been 13 abuse reports to the IP on abuseipdb.com, and all reports were SSH-related. suggesting this IP is specifically used for SSH-based attacks rather than broader scanning
+
+
+![IPdb abuse](images/193abuseipdb1.png)
+![IPdb abuse](images/193abuseipdb2.png)
+
 ### File Analysis
 
 According To Virustotal, The hash of the malicious file (6d1fe6ab3cd04ca5d1ab790339ee2b6577553bc042af3b7587ece0c195267c9b) is classified as a shell script trojan targeting vulnerable SSH servers. According to Palo Alto Networks Threat Research, this hash is associated with Eleethub, a cyptocurrency mining botnet operation where the initial file is used to establish a shell connection using an IRC-based Command and Control (C2) architecture to establish a persistent backdoor to the system, which the C2 could use to execute commands via IRC
@@ -193,30 +199,32 @@ Internet Relay Chat or IRC is a real time text-based communication protocol, cre
 
 This can be verified by seeing the plaintext of the malware using strings. he first line confirms this is a bash script.
 
---photofirstline
+![Bash script line](images/193bash.png)
 
 #!/bin/bash tells OS that to use bash to execute this script using bash as interpreter.
 
 The next few lines shows that the script actively attempts to eliminate competing mining operations
 
---photokillall
+![Killall script line](images/193killall.png)
 
 here, they are trying to kill processes related to mining operations such as minerd, ktx- and others. Interestingly the attacker also ran 
 echo "127.0.0.1 bins.deutschland-zahlung.eu" >> /etc/hosts, redirecting any traffic destined for `bins.deutschland-zahlung.eu` to the local machine (127.0.0.1), effectively blocking it. This is likely a cryptocurrency mining competitor's hostname the attacker is blocking.
 
 On line 38 it is confirmed that they are trying to add an SSH backdoor:
 
---photo of it
+![SSH backdoor line](images/193ssh.png)
 
 this command appends the Attacker's public SSH keys to /root/.ssh/authorized_keys, granting the attacker permanent root SSH access using their own private key.
 
 These lines show that the attacker is trying to connect to undernet IRC servers on port 6667, and on line 88 they are trying to connect to a specific server on undernet named #Biret
 
--- two photos undernet
+![Undernet backdoor](images/193undernet1.png)
+![Undernet backdoor](images/193undernet2.png)
 
 And in line 92-108, the script is configured to intercept any PRIVMSG (Private Message command) from the IRC is received, it checks if the private message is from the legitimate attacker by comparing RSA signature, then if it is, executes the command on the infected machine.
 
--- photo 92-108
+![Undernet Privmg](images/193undernetpriv.png)
+
 ### Conclusion
 This attack is a more sophisticated attack compared to the direct file upload miner delivery on the first sessions. Rather than deploying a miner, the Eleethub botnet establishes control by adding an SSH backdoor and recruiting the machine to an IRC Network, which any subsequent payload such as cryptocurrency miners would be delivered via commands executions in IRC with PRIVMSG. 
 
