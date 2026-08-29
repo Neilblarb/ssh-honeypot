@@ -89,13 +89,15 @@ Some attacks are interesting enough to have an in-depth analysis of the attacks.
 ### 61.240.141.125
 This IP attacked on the 6th of August. It had 3 sessions, first two sessions were only Connects and Close as seen below.
 
---image of the...
+![First Connect](images/61connect1.png)
+![Second Connect](images/61connect2.png)
 
 The attacker connected for two minutes without any SSH handshake or login attempts at all.(21:12-21:14, 21:14-21:16) This is a common pre-attack behavior to do a scouting of checking the victim's latency/stability, or if the target responds at all at certain ports.
 
 The attacker connected in the next session immediately after (21:16) and actually performed an SSH handshake, as seen in this SSH version banner and key exchange.
 
----photo of the thingy
+![SSH client banner](images/61banner.png)
+![Key Exchange](images/61kex.png)
 
 After that, they successfully login with the username root and password centos, a common password for the CentOS Linux distribution, most likely from password spraying instead of a targeted attack.
 
@@ -105,23 +107,26 @@ and immediately exited the session after the upload.
 ### IP Analysis
 A search using Shodan Search Engine of the IP (61.240.141.125) found that it belonged to Qinhuangdao Museum (秦皇岛博物馆) in Hebei, China. It had an active HTTP and HTTPS port, but is inaccessible at time of writing via both direct IP and hostname (qhdbwg.com), likely due to the Great Firewall restricting access to domestic servers or that the server has been taken offline. 
 
+![Shodan Info](images/61shodan.png)
+
 It is unclear how this server was initially compromised and used as a proxy by the attacker, at the time of writing the only ports visible on shodan are HTTP and HTTPS. 
 
 ### File analysis
 
 A virustotal search of the hash shows that the file uploaded was an ELF file (Executable and Linkable File Format), for a cryptocurrency miner.
 
--- photo of the virustotal
+![Virustotal search](images/61virustotal.png)
 
 To verify this, using a software reverse-engineering tool such as Ghidra is recommended, but a basic verification can be achieved by using the strings command to extract readable text from binary. And the first few lines show that it is indeed an ELF
 
--- photo of the lines
+![Analysis Elf Indicator](images/61elf.png)
 
 /lib64/ld-linux-x86-64.so.2 is the standard dynamic linker/loader for 64-bit Linux systems. This confirms that the malware only works on Linux filesystems, and does not work on MacOS or Windows.
 
 To verify that this malware is a miner can be achieved by searching common tools for cryptocurrency mining, as seen below
 
---photo of xmrig string
+![Analysis XMrig Indicator](images/xmrig1.png)
+![Analysis XMrig Indicator](images/xmrig2.png)
 
 This shows that it is indeed a cryptocurrency miner, using XMRig, a popular open-source mining application.
 
