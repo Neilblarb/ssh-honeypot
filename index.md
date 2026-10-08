@@ -23,13 +23,13 @@ A systemd service was then created to automatically start Cowrie on system boot,
 
 Finally, an iptables NAT rule was added to redirect all incoming port 22 traffic to Cowrie's internal port 2223:
 
-sudo iptables -t nat -A PREROUTING -p tcp --dport 22 -j REDIRECT --to-port 2223
+sudo iptables -t nat -A PREROUTING -p tcp -dport 22 -j REDIRECT --to-port 2223
 
 This ensures that attackers connecting to the standard SSH port of 22 are redirected to the correct honeypot listening endpoint of 2223.
 
 ## LOGS
 
-Data was collected over a period of 10 days from August 3 to August 12, 2026. Cowrie logged all activity to a structured JSON file with each event logged as a JSON object. The final dataset of all 10 days includes 13954 events, and Analysis was performed using Splunk Enterprise.
+Data was collected over a period of 10 days from August 3 to August 13, 2026. Cowrie logged all activity to a structured JSON file with each event logged as a JSON object. The final dataset of all 10 days includes 13954 events, and Analysis was performed using Splunk Enterprise.
 
 
 ## Analysis
